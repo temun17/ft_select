@@ -1,24 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_bzero.c                                         :+:      :+:    :+:   */
+/*   original.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: atemunov <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: allentemunovic <marvin@42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/02/19 12:55:54 by atemunov          #+#    #+#             */
-/*   Updated: 2018/08/21 17:38:12 by atemunov         ###   ########.fr       */
+/*   Created: 2018/08/21 01:09:43 by allentemu         #+#    #+#             */
+/*   Updated: 2018/08/22 16:08:35 by atemunov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "../includes/ft_select.h"
 
-void	ft_bzero(void *s, size_t n)
+/*
+** orig_term() - This function stores the orignal terminfo format.
+*/
+
+t_env	*orig_term(t_env **term)
 {
-	unsigned char *c;
+	static t_env	*original;
 
-	c = (unsigned char*)s;
-	while (n-- > 0)
-	{
-		*c++ = '\0';
-	}
+	if (*term == NULL)
+		return (original);
+	original = *term;
+	return (*term);
 }

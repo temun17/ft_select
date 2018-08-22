@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: allentemunovic <marvin@42.fr>              +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2018/08/20 20:42:10 by allentemu         #+#    #+#              #
+#    Updated: 2018/08/21 02:23:09 by allentemu        ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 NAME = ft_select
 
 CC = gcc
@@ -7,14 +19,14 @@ CFLAGS = -g -Wall -Werror -Wextra
 INCLUDES = ./libft/libft.h libft/libft.a
 
 SRCS = srcs/main.c \
-	srcs/signal.c \
-	srcs/display.c \
-	srcs/term.c \
-	srcs/keyhook.c \
-	srcs/keys.c \
 	srcs/valid.c \
-	srcs/actions.c \
-	srcs/arrows.c
+	srcs/init.c \
+	srcs/print.c \
+	srcs/keycode.c \
+	srcs/keys.c \
+	srcs/arrows.c \
+	srcs/original.c \
+	srcs/signal.c \
 
 OBJS = $(SRCS:.c=.o)
 

@@ -1,88 +1,113 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   signal.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: allentemunovic <marvin@42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/08/21 00:40:49 by allentemu         #+#    #+#             */
+/*   Updated: 2018/08/22 16:12:49 by atemunov         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/ft_select.h"
 
-/*
-** ioctl() function manipulates the underlying device parameter of
-** special files
-*/
-
-/*
-** SIGTSTP - signals a stop procress generated from users keyboard (18)
-** SIGCONT - discards signal and continues after stop (19)
-** SIGWINCH - window size change (28)
-** SIGVTALRM - virtual timer alarm (26)
-*/
-
-/*
-**-------------CURSOR MOTION------------
-** "rc" - String of commands to make the terminal restore the last saved cursor position.
-*/
-
-/*
-**------------CLEARING PARTS OF THE SCREEN-----------
-** "cd" - String of commands to clear the line the cursor is on, and all the lines below 
-**	  it, down to the bottom of the screen.
-*/
-
-/*
-**-------------INITIALIZING--------------
-** "ti" - String of commands to put the terminal into whatever special modes are needed 
-**        or appropriate for programs that move the cursor nonsequentially around the screen.
-** "te" - String of commands to undo what is done by the `ti' string.
-*/
-
-/*
-**-------------CURSOR VISIBILITY----------
-** "vi" - String of commands to make the cursor invisible.
-** "ve" - String of commands to return the cursor to normal.
-*/
-
-void	resize_window(int sig)
+static void		terminate(int sig)
 {
-	t_term		*term;
-	int		i;
-	
-	i = 0;
 	(void)sig;
-	term = NULL;
-	term = stock(term, 1);
-	tputs(tgetstr("rc", NULL), 1, my_putchar);
-	tputs(tgetstr("cd", NULL), 1, my_putchar);
-	print_list(term);
+	exit(0);
 }
 
-void	suspend_signal(int sig)
+/*
+** ICANON() - Enables canonical mode (terminal input processed in lines
+**			  terminated by newline ('\n'), EOF, or EOL charcters.
+** ECHO() - echo the input characters.
+** signal() - a simplified interface to mainpulate a process from outside it's
+**			  domain, as well as allowing the process to manipulate itself.
+** stop_process() - This function listens for a SIGTSTP or 18 signal that stops
+**					the signal gernerated from the keyboard.
+** tputs() - output commands to the terminal.
+** tcsetattr() - set the parameters associated with the terminal.
+** tcgetattr() - get the parameters associated with the terminal.
+** tgetstr() - returns the string entry fo r id, or zero if it is not available.
+** 			   Use tputs() to output the return string.
+*/
+
+static void		stop_process(int sig)
 {
-	t_term	*term;
-	char	cp[2];
+	t_env			*term;
+	char			cp[2];
 
 	(void)sig;
 	term = NULL;
-	term = stock(term, 1);
 	cp[0] = term->termios.c_cc[VSUSP];
 	cp[1] = 0;
 	term->termios.c_lflag &= ~(ICANON | ECHO);
-	tcsetattr(term->fd, TCSANOW, &(term->termios));
-	tputs(tgetstr("te", NULL), 1, my_putchar);
-	tputs(tgetstr("ve", NULL), 1, my_putchar);
 	signal(18, SIG_DFL);
+	if (tcsetattr(0, TCSADRAIN, &term->termios) == -1)
+		write(1, "Cannot retrieve termcap attributes TERM\n", 40);
+	tcsetattr(0, 0, &(term->termios));
+	tputs(tgetstr("ve", NULL), 1, my_putchar);
+	tputs(tgetstr("te", NULL), 1, my_putchar);
 	ioctl(0, TIOCSTI, cp);
 }
 
-/*void	restart_signal(int sig)
+/*
+** restart() - This function sends a signal define macro called SIGCONT or 19
+**             that continues the process. This signal is special - it always
+**			   makes the process contiue if it is stopped, before the signal
+**             is delievered.
+*/
+
+static void		restart(int sig)
 {
-	t_term	*term;
-	int	i;
+	t_env			*term;
 
 	(void)sig;
-	i = 0;	
 	term = NULL;
-	term = stock(term, 1);
+	term = orig_term(&term);
+	tcgetattr(term->fd, &term->termios);
 	term->termios.c_lflag &= ~(ICANON | ECHO);
 	term->termios.c_cc[VMIN] = 1;
 	term->termios.c_cc[VTIME] = 0;
-	tcsetattr(term->fd, TCSANOW, &(term->termios));
+	tcsetattr(term->fd, TCSANOW, &term->termios);
+	set_signal(term);
 	tputs(tgetstr("vi", NULL), 1, my_putchar);
 	tputs(tgetstr("ti", NULL), 1, my_putchar);
-	signal(18, SIG_DFL);
+	window_size_change(sig);
+	check_size(term);
+}
+
+/*
+** window_size_change() - This funciton is generated when the terminal
+**						  driver's record of the number of rows and cols
+**						  on the screen changes. This helps ignore it.
+*/
+
+void			window_size_change(int sig)
+{
+	t_env			*term;
+	struct winsize	winsize;
+
+	(void)sig;
+	term = NULL;
+	term = orig_term(&term);
+	ioctl(0, TIOCGWINSZ, &winsize);
+	if (tgetent(NULL, getenv("TERM")) <= 0)
+		write(1, "Cannot resize window.\n", 22);
 	print_list(term);
-}*/
+}
+
+/*
+** set_signal() - Function acts as a dispatch table and listens for any
+**                signal sent from the user to be executed.
+*/
+
+void			set_signal(t_env *term)
+{
+	term = orig_term(&term);
+	signal(28, window_size_change);
+	signal(18, stop_process);
+	signal(19, restart);
+	signal(2, terminate);
+}

@@ -3,60 +3,49 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: atemunov <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: allentemunovic <marvin@42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/08/08 13:03:05 by atemunov          #+#    #+#             */
-/*   Updated: 2018/08/14 14:04:45 by atemunov         ###   ########.fr       */
+/*   Created: 2018/08/20 20:42:38 by allentemu         #+#    #+#             */
+/*   Updated: 2018/08/22 16:19:47 by atemunov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ft_select.h"
 
-void	sel_putchar(char c, unsigned int nbr, int fd)
+int			my_putchar(int c)
 {
-	unsigned int	i;
-	
-	i = 0;
-	while (i++ < nbr)
-		ft_putchar_fd(c, fd);
+	return (write(2, &c, 1));
 }
 
-int	my_putchar(int c)
+static void	input_loop(t_env *term)
 {
-	return(write(2, &c, 1));
+	while (42)
+	{
+		print_list(term);
+		read(0, &term->keycode, 4);
+		keycode(term);
+		if (!term->cap_names)
+			reset_and_complete(0);
+	}
 }
 
-t_term	*stock(t_term *term, int i)
+int			main(int argc, char **argv)
 {
-	static t_term *temp = NULL;
-	
-	if (--i == 0)
-		temp = term;
-	return (temp);
-}
-
-int	main(int argc, char **argv)
-{
-	t_term		*term;
-	unsigned int	i;
+	t_env	*term;
+	int		i;
 	int		j;
-	int		element;
 
-	i = 1;
+	i = 0;
 	j = 0;
-	element = 0;
 	if (argc == 1)
 	{
 		write(1, "ft_select: arguments missing\n", 29);
 		exit(1);
 	}
-	term = malloc(sizeof(t_term));
 	check_empty_args(argc, argv, i, j);
-	setup_termcap(term, argc, argv);
-	select_from_struct(term, element);
-	get_struct(term);
-	stock(term, i);
-	clear_screen(0);
-	keyhook(term);
-	return (0);
+	term = (t_env *)malloc(sizeof(t_env));
+	init_struct(term, argc, argv);
+	init_term(term, argc);
+	set_signal(term);
+	input_loop(term);
 }

@@ -6,7 +6,7 @@
 /*   By: atemunov <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 12:36:03 by atemunov          #+#    #+#             */
-/*   Updated: 2018/07/02 16:59:54 by atemunov         ###   ########.fr       */
+/*   Updated: 2018/08/22 16:03:04 by atemunov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@
 # define ISIGN(x) (x == '+' || x == '-')
 # define ESCAPE(x) (x == ' ' || x == '\n' || x == '\t')
 # define ESCAPE2(x) (x == '\r') || (x == '\v') || (x == '\f')
-# define ESEQUENCE(x) ((x == ' ') || (x == '\t') || (x == '\n') || (x == '\r') || (x == '\v') || (x == '\f'))
 
 typedef struct	s_list
 {

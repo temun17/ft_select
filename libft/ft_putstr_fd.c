@@ -6,7 +6,7 @@
 /*   By: atemunov <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 12:47:19 by atemunov          #+#    #+#             */
-/*   Updated: 2018/03/06 23:30:11 by atemunov         ###   ########.fr       */
+/*   Updated: 2018/08/21 17:39:12 by atemunov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,11 @@ void	ft_putstr_fd(const char *str, int fd)
 
 	i = 0;
 	if (str)
+	{
 		while (str[i])
 		{
-			write(fd, str, str[i]);
+			write(fd, &str[i], 1);
 			i++;
 		}
+	}
 }
